@@ -67,7 +67,7 @@ def sentence_embedding_sim_matrix(text: list, target: str) -> np.ndarray:
 def split_sentences(text):
     total = []
     for t in tqdm(text, total=len(text), leave=False, desc='Split Sentence'):
-        total.append(sum(kss.split_sentences([t], num_workers=1),[]))
+        total.append(kss.split_sentences([t], num_workers=1))
 
     return total
 
