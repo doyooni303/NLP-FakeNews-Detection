@@ -1,5 +1,10 @@
 EXP_NAME: FNDNet-tfidf_title_category_select
 SEED: 223
+MODE:
+    save_list:
+        - train
+        - validation
+        - test
 DATASET:
   name: FNDNet
   data_path: ../data/Part1
