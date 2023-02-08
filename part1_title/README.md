@@ -283,13 +283,49 @@ RESULT:
     savedir: ../data/Part1
     dataname: 'BERT_w512'
 ```
+**ex)** `./configs-direct/sentence_embedding_content_category_select/BERT/BERT_save_dataloader.yaml`
+
+```yaml
+EXP_NAME: BERT-sentence_embedding_content_category_select
+SEED: 223
+MODE:
+    save_list:
+        - train
+        - validation
+        - test
+DATASET:
+  name: BERT
+  data_path: ../data/Part1
+  saved_data_path: false
+  PARAMETERS:
+    max_word_len: 512
+  direct_path: ../data-direct/sentence_embedding_content_category_select
+TOKENIZER:
+  name: bert
+TRAIN:
+  batch_size: 256
+  num_workers: 12
+RESULT:
+  savedir: ../data-direct/sentence_embedding_content_category_select
+  dataname: BERT_w512
+```
+
 
 
 **run**
 
 ```bash
 python save_dataloader.py --yaml_config ./configs/${modelname}/${modelname}_save_dataloader.yaml
+
+<Original Version>
 python main.py --yaml_config ./configs/${modelname}/${modelname}-train.yaml
+
+<With Direct-Dataset Version>
+
+python main.py \
+    --yaml_config ./configs-direct/${method}_category_select/${modelname}/${modelname}-train.yaml \
+    --method ${method}
+
 ```
 
 **fine-tuning**
@@ -317,7 +353,15 @@ MODEL:
 **test**
 
 ```bash
+
+<Original Version>
 python main.py --yaml_config ./configs/${modelname}/${modelname}-test.yaml
+
+<With Direct-Dataset Version>
+python main.py \
+    --yaml_config ./configs-direct/${method}_category_select/${modelname}/${modelname}-test.yaml \
+    --method ${method}
+
 ```
 
 # Results
