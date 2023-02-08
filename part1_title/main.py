@@ -57,7 +57,18 @@ def run(cfg):
     if cfg['MODE']['do_train']:
         # wandb
         if cfg['TRAIN']['use_wandb']:
-            wandb.init(name=cfg['EXP_NAME'], project='Fake-News-Detection-Task1', config=cfg)
+            if 'category_select' in cfg['EXP_NAME']:
+                wandb.init(name=cfg['DATASET']['name'], # ModelName과 동일
+                        group = cfg['DATASET']['method'],
+                        entity='fakenews-detection',
+                        project='Fake-News-Detection-Task1-Direct',
+                        config=cfg)
+
+            else:
+                wandb.init(name=cfg['EXP_NAME'],
+                        entity='fakenews-detection',
+                        project='Fake-News-Detection-Task1',
+                        config=cfg)
 
         # Build datasets
         trainset = create_dataset(
@@ -173,10 +184,10 @@ def run(cfg):
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Fake News Detection - Task1')
     parser.add_argument('--yaml_config', type=str, default=None, help='exp config file')    
-
+    parser.add_argument('--method', type=str, default=None, help='Type of dataset')    
     args = parser.parse_args()
 
     # config
     cfg = yaml.load(open(args.yaml_config,'r'), Loader=yaml.FullLoader)
-
+    cfg['DATASET']['method']=args.method
     run(cfg)
