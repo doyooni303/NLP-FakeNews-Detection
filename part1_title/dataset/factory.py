@@ -14,6 +14,9 @@ from .build_dataset import *
 from .tokenizer import FNDTokenizer
 from typing import Union
 
+from transformers import AutoModel, AutoTokenizer
+
+
 def extract_word_embedding(vocab_path: str, max_vocab_size: int =-1) -> Union[list, np.ndarray]:
     word_embed = pd.read_csv(
         filepath_or_buffer = vocab_path, 
@@ -35,10 +38,17 @@ def create_tokenizer(name: str, vocab_path: str, max_vocab_size: int):
     if name == 'mecab':
         vocab, word_embed = extract_word_embedding(vocab_path = vocab_path, max_vocab_size = max_vocab_size)
         tokenizer = FNDTokenizer(vocab = vocab, tokenizer = Mecab())
+    
     elif name == 'bert':
         word_embed = None
         _, vocab = get_pytorch_kobert_model(cachedir=".cache")
         tokenizer = nlp.data.BERTSPTokenizer(get_tokenizer(), vocab, lower=False)
+        
+    elif name == 'kobigbird':
+        word_embed = None
+        tokenizer_kobigbird = AutoTokenizer.from_pretrained("monologg/kobigbird-bert-base")
+        tokenizer = nlp.data.BERTSPTokenizer(get_tokenizer(), tokenizer_kobigbird, lower=False)
+        # tokenizer = AutoTokenizer.from_pretrained("monologg/kobigbird-bert-base")
 
     return tokenizer, word_embed 
 

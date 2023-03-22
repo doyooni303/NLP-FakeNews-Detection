@@ -94,7 +94,3 @@ class BERTDataset(FakeDataset):
             return len(self.data['doc']['input_ids'])
         else:
             return len(self.data)
-    
-
-
-

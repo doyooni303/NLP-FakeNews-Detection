@@ -1,0 +1,26 @@
+EXP_NAME: KOBIGBIRD
+SEED: 223
+    
+MODE:
+    save_list:
+        - train
+        - validation
+        - test
+
+DATASET:
+    name: KOBIGBIRD
+    data_path: ../data/Part1 # news article directory
+    saved_data_path: false
+    PARAMETERS:
+        max_word_len: 4096
+
+TOKENIZER:
+    name: kobigbird
+
+TRAIN:
+    batch_size: 32
+    num_workers: 4
+
+RESULT:
+    savedir: ../data/Part1
+    dataname: 'KOBIGBIRD_w4096'
