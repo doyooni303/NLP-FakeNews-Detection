@@ -1,0 +1,27 @@
+EXP_NAME: DualBERT
+SEED: 223
+    
+MODE:
+    save_list:
+        - train
+        - validation
+        - test
+
+DATASET:
+    name: DualBERT
+    data_path: ../data/Part1 # news article directory
+    saved_data_path: false
+    PARAMETERS:
+        max_word_len: 512
+        max_category_len: 128
+
+TOKENIZER:
+    name: bert
+
+TRAIN:
+    batch_size: 32
+    num_workers: 4
+
+RESULT:
+    savedir: ../data/Part1
+    dataname: 'DualBERT_w512'

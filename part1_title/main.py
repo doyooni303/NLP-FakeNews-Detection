@@ -58,7 +58,7 @@ def run(cfg):
         # wandb
         if cfg['TRAIN']['use_wandb']:
             if 'category_select' in cfg['EXP_NAME']:
-                wandb.init(name=cfg['DATASET']['name'], # ModelName과 동일
+                wandb.init(name=cfg['DATASET']['name'] if cfg['DATASET']['wandb_name'] is None else cfg['DATASET']['wandb_name'], # ModelName과 동일
                         group = cfg['DATASET']['method'],
                         entity='fakenews-detection',
                         project='Fake-News-Detection-Task1-Direct',
@@ -185,9 +185,14 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Fake News Detection - Task1')
     parser.add_argument('--yaml_config', type=str, default=None, help='exp config file')    
     parser.add_argument('--method', type=str, default=None, help='Type of dataset')    
+    parser.add_argument('--exp_name', type=str, default=None, help='Name of experience')    
+    parser.add_argument('--data_name', type=str, default=None, help='Name of dataset')    
     args = parser.parse_args()
 
     # config
     cfg = yaml.load(open(args.yaml_config,'r'), Loader=yaml.FullLoader)
     cfg['DATASET']['method']=args.method
+    if args.exp_name is not None:
+        cfg['EXP_NAME']=args.exp_name
+    cfg['DATASET']['wandb_name']=args.data_name
     run(cfg)

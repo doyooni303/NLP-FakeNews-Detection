@@ -7,35 +7,69 @@ import argparse
 
 from dataset import create_tokenizer, create_dataset, create_dataloader
 
-def save(split, dataloader, savedir):
-    
-    doc_dict = {}
-    label_list = []
-    for i, (doc, label) in enumerate(tqdm(dataloader, desc=split)):
-        if len(doc_dict) == 0:
-            for k in doc.keys():
-                doc_dict[k] = []
+def save(split, dataloader, savedir, name):
+    if name=='DualBERT':
+        main_dict, ctg_dict = {}, {}
+        label_list = []
+        for i, (doc,label) in enumerate(tqdm(dataloader, desc=split)):
+            # main
+            if len(main_dict) == 0:
+                for k in doc['main'].keys():
+                    main_dict[k] = []
+                
+            for k in doc['main'].keys():
+                main_dict[k].append(doc['main'][k])
             
-        for k in doc.keys():
-            doc_dict[k].append(doc[k])
-        label_list.append(label)
+            # category
+            if len(ctg_dict) == 0:
+                for k in doc['ctg'].keys():
+                    ctg_dict[k] = []
+                
+            for k in doc['ctg'].keys():
+                ctg_dict[k].append(doc['ctg'][k])
 
-    for k in doc_dict.keys():
-        doc_dict[k] = torch.cat(doc_dict[k])
-    label_list = torch.cat(label_list)
 
-    torch.save({'doc':doc_dict, 'label':label_list}, os.path.join(savedir,f'{split}.pt'))
+            label_list.append(label)
+
+        for k in main_dict.keys():
+            main_dict[k] = torch.cat(main_dict[k])
+
+        for k in ctg_dict.keys():
+            ctg_dict[k] = torch.cat(ctg_dict[k])
+
+        label_list = torch.cat(label_list)
+
+        torch.save({'doc':{'main':main_dict,'ctg':ctg_dict}, 'label':label_list}, os.path.join(savedir,f'{split}.pt'))
+    else:
+        doc_dict = {}
+        label_list = []
+        for i, (doc, label) in enumerate(tqdm(dataloader, desc=split)):
+            if len(doc_dict) == 0:
+                for k in doc.keys():
+                    doc_dict[k] = []
+                
+            for k in doc.keys():
+                doc_dict[k].append(doc[k])
+            label_list.append(label)
+
+        for k in doc_dict.keys():
+            doc_dict[k] = torch.cat(doc_dict[k])
+        label_list = torch.cat(label_list)
+
+        torch.save({'doc':doc_dict, 'label':label_list}, os.path.join(savedir,f'{split}.pt'))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--yaml_config', type=str, default=None, help='exp config file')
+    parser.add_argument('--save_directory', type=str, default=None, help='save directory for dataloader')
     args = parser.parse_args()
 
     # config
     cfg = yaml.load(open(args.yaml_config,'r'), Loader=yaml.FullLoader)
 
     # save directory
-    savedir = os.path.join(cfg['RESULT']['savedir'], cfg['RESULT']['dataname'])
+    directory_name = cfg['RESULT']['dataname'] if args.save_directory is None else args.save_directory
+    savedir = os.path.join(cfg['RESULT']['savedir'], directory_name)
     os.makedirs(savedir, exist_ok=True)
 
     # tokenizer
@@ -63,9 +97,10 @@ if __name__ == '__main__':
                 num_workers = cfg['TRAIN']['num_workers'],
                 shuffle     = False
             )
-    
+
             # save
-            save(split, dataloader, savedir)
+            save(split, dataloader, savedir, cfg['DATASET']['name'])
         except:
             print(f'{split} folder does not exist')
+
         

@@ -5,6 +5,8 @@ import csv
 from konlpy.tag import Mecab
 from torch.utils.data import DataLoader
 
+from transformers import AutoTokenizer
+
 import gluonnlp as nlp
 
 from kobert import get_pytorch_kobert_model
@@ -39,7 +41,14 @@ def create_tokenizer(name: str, vocab_path: str, max_vocab_size: int):
         word_embed = None
         _, vocab = get_pytorch_kobert_model(cachedir=".cache")
         tokenizer = nlp.data.BERTSPTokenizer(get_tokenizer(), vocab, lower=False)
-
+    
+    else:
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(name)
+            word_embed = None
+        except:
+            raise f"{name} is not in the Autotokenizer list!"
+    
     return tokenizer, word_embed 
 
 
