@@ -11,9 +11,10 @@ from typing import Union
 _logger = logging.getLogger('train')
 
 class FakeDataset(Dataset):
-    def __init__(self, tokenizer):
+    def __init__(self, tokenizer, use_cat):
         # tokenizer
         self.tokenizer = tokenizer
+        self.use_cat = use_cat
 
     def load_dataset(self, data_dir, split, direct_dir: Union[None, str] = None, saved_data_path: bool = False):
 
@@ -61,15 +62,27 @@ class FakeDataset(Dataset):
         
             # label
             label = 1 if 'NonClickbait_Auto' not in self.data_info[i] else 0
-        
-            # transform and padding
-            doc = self.transform(
-                title = news_info['labeledDataInfo']['newTitle'], 
-                text  = news_info['sourceDataInfo']['newsContent'].split('\n')
-            )
 
-            return doc, label
+            if self.use_cat:
+                doc = self.transform(
+                                    title = news_info['labeledDataInfo']['newTitle'], 
+                                    text  = news_info['sourceDataInfo']['newsContent'].split('\n'),
+                                    category = news_info['sourceDataInfo']['newsCategory'],
+                                    subcategory = news_info['sourceDataInfo']['newsSubcategory']
+                                    )
+                    
+                return doc, label
+        
+            else:
+                
+                doc = self.transform(
+                    title = news_info['labeledDataInfo']['newTitle'], 
+                    text  = news_info['sourceDataInfo']['newsContent'].split('\n'),
+                    category = '',
+                    subcategory = ''
+                    )
+                    
+                return doc, label
 
     def __len__(self):
         raise NotImplementedError
-

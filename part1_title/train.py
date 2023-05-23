@@ -31,15 +31,20 @@ class AverageMeter:
         self.avg = self.sum / self.count
 
 
-
 def training(model, num_training_steps: int, trainloader, validloader, criterion, optimizer, scheduler,
-             log_interval: int, eval_interval: int, savedir: str, use_wandb: bool, accumulation_steps: int = 1, device: str = 'cpu'):   
+             log_interval: int, eval_interval: int, savedir: str, use_wandb: bool, accumulation_steps: int = 1, device: str = 'cpu',
+             **kwargs
+             ):   
     batch_time_m = AverageMeter()
     data_time_m = AverageMeter()
     acc_m = AverageMeter()
     losses_m = AverageMeter()
     best_acc = 0
     
+    model_name = model.__class__.__name__
+    
+    print(model_name)
+
     end = time.time()
     
     model.train()
@@ -47,6 +52,9 @@ def training(model, num_training_steps: int, trainloader, validloader, criterion
 
     step = 0
     train_mode = True
+
+    hidden, cell = None, None
+
     while train_mode:
         for inputs, targets in trainloader:
             # batch
@@ -56,9 +64,19 @@ def training(model, num_training_steps: int, trainloader, validloader, criterion
 
             # optimizer condition
             opt_cond = (step + 1) % accumulation_steps == 0
+            
+            batch_size = len(targets)
 
-            # predict
-            outputs = model(**inputs)
+            # add initial hidden and cells state of LSTM
+            if "LSTM" in model_name:
+                hidden = torch.zeros(1*(kwargs['num_layers']), batch_size,  kwargs['hidden_size']).to(device)
+                cell = torch.zeros(1*(kwargs['num_layers']), batch_size, kwargs['hidden_size']).to(device) 
+
+                # predict
+                outputs = model(**inputs, hidden = hidden, cell = cell)
+            else:
+                outputs = model(**inputs)
+
             loss = criterion(outputs, targets)
             # loss for accumulation steps
             loss /= accumulation_steps        
@@ -105,7 +123,7 @@ def training(model, num_training_steps: int, trainloader, validloader, criterion
 
 
                 if (((step+1) // accumulation_steps) % eval_interval == 0 and step != 0) or step+1 == num_training_steps: 
-                    eval_metrics = evaluate(model, validloader, criterion, log_interval, device)
+                    eval_metrics = evaluate(model, validloader, criterion, log_interval, device,**kwargs)
                     model.train()
 
                     eval_log = dict([(f'eval_{k}', v) for k, v in eval_metrics.items()])
@@ -142,7 +160,10 @@ def training(model, num_training_steps: int, trainloader, validloader, criterion
     _logger.info('Best Metric: {0:.3%} (step {1:})'.format(best_acc, state['best_step']))
     
         
-def evaluate(model, dataloader, criterion, log_interval: int, device: str = 'cpu', sample_check: bool = False):
+def evaluate(model, dataloader, criterion, log_interval: int, 
+             device: str = 'cpu', sample_check: bool = False,
+             **kwargs
+             ):
     correct = 0
     total = 0
     total_loss = 0
@@ -150,13 +171,27 @@ def evaluate(model, dataloader, criterion, log_interval: int, device: str = 'cpu
     total_preds = []
     total_targets = []
 
+    model_name = model.__class__.__name__
+
+    hidden, cell = None, None
+    
     model.eval()
     with torch.no_grad():
         for idx, (inputs, targets) in enumerate(dataloader):
             inputs, targets = convert_device(inputs, device), targets.to(device)
             
-            # predict
-            outputs = model(**inputs)
+            batch_size = len(targets)
+
+            # add initial hidden and cells state of LSTM
+            if "LSTM" in model_name:
+                hidden = torch.zeros(1*(kwargs['num_layers']), batch_size,  kwargs['hidden_size']).to(device)
+                cell = torch.zeros(1*(kwargs['num_layers']), batch_size, kwargs['hidden_size']).to(device) 
+
+                # predict
+                outputs = model(**inputs, hidden = hidden, cell = cell)
+            else:
+                outputs = model(**inputs)
+                
             outputs = torch.nn.functional.softmax(outputs, dim=1)
 
             # loss 

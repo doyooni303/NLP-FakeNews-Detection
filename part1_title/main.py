@@ -37,7 +37,8 @@ def run(cfg):
     tokenizer, word_embed = create_tokenizer(
         name            = cfg['TOKENIZER']['name'], 
         vocab_path      = cfg['TOKENIZER'].get('vocab_path', None), 
-        max_vocab_size  = cfg['TOKENIZER'].get('max_vocab_size', None)
+        max_vocab_size  = cfg['TOKENIZER'].get('max_vocab_size', None),
+        pretrained_model_name_or_path = cfg['TOKENIZER']['pretrained_model_name_or_path']
     )
     
     # Build Model
@@ -49,7 +50,11 @@ def run(cfg):
         freeze_word_embed         = cfg['MODEL'].get('freeze_word_embed',False),
         use_pretrained_word_embed = cfg['MODEL'].get('use_pretrained_word_embed',False),
         checkpoint_path           = cfg['MODEL']['CHECKPOINT']['checkpoint_path'],
+        **cfg['MODEL']['Exp_Params']
     )
+
+    print(model)
+    
     model.to(device)
 
     _logger.info('# of trainable params: {}'.format(np.sum([p.numel() if p.requires_grad else 0 for p in model.parameters()])))
@@ -135,7 +140,8 @@ def run(cfg):
             savedir            = savedir,
             accumulation_steps = cfg['TRAIN']['accumulation_steps'],
             device             = device,
-            use_wandb          = cfg['TRAIN']['use_wandb']
+            use_wandb          = cfg['TRAIN']['use_wandb'],
+            **cfg['MODEL']['Exp_Params']
         )
 
     elif cfg['MODE']['do_test']:
@@ -167,7 +173,8 @@ def run(cfg):
                     criterion    = criterion,
                     log_interval = cfg['LOG']['log_interval'],
                     device       = device,
-                    sample_check = True
+                    sample_check = True,
+                    **cfg['MODEL']['Exp_Params']
                 )
                 
                 # save exp result

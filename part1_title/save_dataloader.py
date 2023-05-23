@@ -42,30 +42,32 @@ if __name__ == '__main__':
     tokenizer, word_embed = create_tokenizer(
         name            = cfg['TOKENIZER']['name'], 
         vocab_path      = cfg['TOKENIZER'].get('vocab_path', None), 
-        max_vocab_size  = cfg['TOKENIZER'].get('max_vocab_size', None)
-    )
+        max_vocab_size  = cfg['TOKENIZER'].get('max_vocab_size', None),
+        pretrained_model_name_or_path = cfg['TOKENIZER']['pretrained_model_name_or_path']
+     )
 
     for split in cfg['MODE']['save_list']:
-        try:
-            dataset = create_dataset(
-                name           = cfg['DATASET']['name'], 
-                data_path      = cfg['DATASET']['data_path'], 
-                direct_path    = cfg['DATASET'].get('direct_path',None),
-                split          = split, 
-                tokenizer      = tokenizer, 
-                saved_data_path = cfg['DATASET']['saved_data_path'],
-                **cfg['DATASET']['PARAMETERS']
-            )
+        # try:
+        dataset = create_dataset(
+            name           = cfg['DATASET']['name'], 
+            data_path      = cfg['DATASET']['data_path'], 
+            direct_path    = cfg['DATASET'].get('direct_path',None),
+            split          = split, 
+            tokenizer      = tokenizer, 
+            saved_data_path = cfg['DATASET']['saved_data_path'],
+            **cfg['DATASET']['PARAMETERS']
+        )
+        
+        dataloader = create_dataloader(
+            dataset     = dataset, 
+            batch_size  = cfg['TRAIN']['batch_size'], 
+            num_workers = cfg['TRAIN']['num_workers'],
+            shuffle     = False
+        )
+
+        # save
+        save(split, dataloader, savedir)
             
-            dataloader = create_dataloader(
-                dataset     = dataset, 
-                batch_size  = cfg['TRAIN']['batch_size'], 
-                num_workers = cfg['TRAIN']['num_workers'],
-                shuffle     = False
-            )
-    
-            # save
-            save(split, dataloader, savedir)
-        except:
-            print(f'{split} folder does not exist')
+        # except:
+        print(f'{split} folder does not exist')
         
