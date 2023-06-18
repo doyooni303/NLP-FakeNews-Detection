@@ -1,6 +1,7 @@
 from .build_dataset import FakeDataset
 import torch 
 from typing import List
+import pdb
 
 class BERTDataset(FakeDataset):
     def __init__(self, tokenizer, max_word_len: int):
@@ -25,11 +26,13 @@ class BERTDataset(FakeDataset):
         doc['input_ids'] = input_ids
         doc['attention_mask'] = attention_mask
         doc['token_type_ids'] = token_type_ids
-
+        pdb.set_trace()
+   
         return doc
 
 
     def tokenize(self, src: list) -> List[torch.Tensor]:
+
         src_subtokens = [[self.vocab.cls_token] + src[0] + [self.vocab.sep_token]] + [sum(src[1:],[]) + [self.vocab.sep_token]]
         input_ids = [self.tokenizer.convert_tokens_to_ids(s) for s in src_subtokens]
         

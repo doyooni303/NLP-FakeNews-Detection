@@ -46,10 +46,12 @@ def create_tokenizer(name: str, vocab_path: str, max_vocab_size: int):
         
     elif name == 'kobigbird':
         word_embed = None
-        tokenizer_kobigbird = AutoTokenizer.from_pretrained("monologg/kobigbird-bert-base")
-        tokenizer = nlp.data.BERTSPTokenizer(get_tokenizer(), tokenizer_kobigbird, lower=False)
-        # tokenizer = AutoTokenizer.from_pretrained("monologg/kobigbird-bert-base")
-
+        tokenizer = AutoTokenizer.from_pretrained("monologg/kobigbird-bert-base")
+        
+    elif name == 'RoBERTa_dualbert':
+        word_embed = None
+        tokenizer = AutoTokenizer.from_pretrained("klue/roberta-base")       
+        
     return tokenizer, word_embed 
 
 
@@ -63,7 +65,7 @@ def create_dataset(name: str, data_path: str, direct_path: Union[None, str], spl
         data_dir        = data_path, 
         split           = split, 
         direct_dir      = direct_path,
-        saved_data_path = saved_data_path
+        saved_data_path = saved_data_path,
     )
 
     return dataset

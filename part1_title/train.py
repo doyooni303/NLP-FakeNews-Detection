@@ -3,6 +3,7 @@ import json
 import os 
 import wandb
 import logging
+import pdb
 
 import torch
 import numpy as np
@@ -51,12 +52,11 @@ def training(model, num_training_steps: int, trainloader, validloader, criterion
         for inputs, targets in trainloader:
             # batch
             inputs, targets = convert_device(inputs, device), targets.to(device)
-
             data_time_m.update(time.time() - end)
 
             # optimizer condition
             opt_cond = (step + 1) % accumulation_steps == 0
-
+            
             # predict
             outputs = model(**inputs)
             loss = criterion(outputs, targets)
@@ -92,15 +92,15 @@ def training(model, num_training_steps: int, trainloader, validloader, criterion
                     _logger.info('TRAIN [{:>4d}/{}] Loss: {loss.val:>6.4f} ({loss.avg:>6.4f}) '
                                 'Acc: {acc.avg:.3%} '
                                 'LR: {lr:.3e} '
-                                'Time: {batch_time.val:.3f}s, {rate:>7.2f}/s ({batch_time.avg:.3f}s, {rate_avg:>7.2f}/s) '
+                                'Time: {batch_time.val:.3f}s ({batch_time.avg:.3f}) ' # {rate:>7.2f}/s ({batch_time.avg:.3f}s, {rate_avg:>7.2f}/s) '
                                 'Data: {data_time.val:.3f} ({data_time.avg:.3f})'.format(
                                 (step+1)//accumulation_steps, num_training_steps, 
                                 loss       = losses_m, 
                                 acc        = acc_m, 
                                 lr         = optimizer.param_groups[0]['lr'],
                                 batch_time = batch_time_m,
-                                rate       = inputs['input_ids'].size(0) / batch_time_m.val,
-                                rate_avg   = inputs['input_ids'].size(0) / batch_time_m.avg,
+                                # rate       = inputs['input_ids'].size(0) / batch_time_m.val,
+                                # rate_avg   = inputs['input_ids'].size(0) / batch_time_m.avg,
                                 data_time  = data_time_m))
 
 
