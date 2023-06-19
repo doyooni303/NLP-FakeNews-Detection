@@ -1,0 +1,52 @@
+EXP_NAME: BERT_LSTM_2_layer
+SEED: 223
+
+MODE:
+    do_train: True
+    do_test: False
+    
+DATASET:
+    name: BERT_LSTM
+    data_path: ../data/Part1 # news article directory
+    saved_data_path: ../data-direct/sentence_embedding_title_category_select/BERT_LSTM_2_layer
+    PARAMETERS:
+        max_word_len: 512
+        use_cat: True
+    direct_path: ../data-direct/sentence_embedding_title_category_select
+
+TOKENIZER:
+    name: bert
+    pretrained_model_name_or_path: skt/kobert-base-v1
+    
+MODEL:
+    modelname: bert_lstm
+    PARAMETERS:
+        pretrained_name: 'skt/kobert-base-v1'
+        num_classes: 2
+    CHECKPOINT:
+        checkpoint_path: null
+    Exp_Params:
+        hidden_size: 256
+        num_layers: 2
+    
+TRAIN:
+    batch_size: 8
+    num_training_steps: 10000
+    accumulation_steps: 1
+    num_workers: 12
+    use_wandb: False
+
+LOG:
+    log_interval: 1
+    eval_interval: 1000
+
+OPTIMIZER:
+    lr: 0.00001
+    weight_decay: 0.0005
+
+SCHEDULER:
+    warmup_ratio: 0.1
+    use_scheduler: True
+
+RESULT:
+    savedir: ./saved_model-direct/sentence_embedding_title_category_select
