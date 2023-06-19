@@ -1,0 +1,45 @@
+EXP_NAME: RoBERTa_Category
+SEED: 223
+
+MODE:
+    do_train: False
+    do_test: True
+    test_list:
+        - train
+        - validation
+        - test
+
+DATASET:
+    name: BERT_category
+    data_path: ../data/Part1 # news article directory
+    saved_data_path: ../data-direct/bow_content_category_select/RoBERTa_Category
+    PARAMETERS:
+        max_word_len: 512
+        use_cat: True
+    direct_path: ../data-direct/bow_content_category_select
+
+TOKENIZER:
+    name: RoBERTa
+    pretrained_model_name_or_path: klue/roberta-base
+
+MODEL:
+    modelname: bert
+    PARAMETERS:
+        pretrained_name: 'klue/roberta-base'
+        num_classes: 2
+    CHECKPOINT:
+        checkpoint_path: ./saved_model-direct/bow_content_category_select/RoBERTa_Category/best_model.pt
+    Exp_Params:
+        hidden_size: None
+        num_layers: None
+        
+TRAIN:
+    batch_size: 64
+    num_workers: 12
+
+LOG:
+    log_interval: 10
+
+RESULT:
+    savedir: ./saved_model-direct/bow_content_category_select
+    result_name: results
