@@ -160,5 +160,4 @@ saved_model*/
 *.tar.gz
 *.zip
 clickbait_direct/
-*direct
-!/part1_title/dataset
+!part1_title/configs-direct

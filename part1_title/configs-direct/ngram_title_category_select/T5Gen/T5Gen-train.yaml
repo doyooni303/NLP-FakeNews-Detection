@@ -1,0 +1,38 @@
+EXP_NAME: T5Gen-ngram_title_category_select
+SEED: 223
+MODE:
+  do_train: true
+  do_test: false
+DATASET:
+  name: T5Gen
+  data_path: ../data/Part1
+  saved_data_path: ../data-direct/ngram_title_category_select/T5Gen_s512_t128
+  PARAMETERS:
+    max_source_length: 512
+    max_target_length: 128
+  direct_path: ../data-direct/ngram_title_category_select
+TOKENIZER:
+  name: KETI-AIR/ke-t5-small-newslike
+MODEL:
+  modelname: t5gen
+  PARAMETERS:
+    pretrained_name: KETI-AIR/ke-t5-small-newslike
+  CHECKPOINT:
+    checkpoint_path: null
+TRAIN:
+  batch_size: 4
+  num_training_steps: 20000
+  accumulation_steps: 2
+  num_workers: 12
+  use_wandb: true
+LOG:
+  log_interval: 1
+  eval_interval: 1000
+OPTIMIZER:
+  lr: 1.0e-05
+  weight_decay: 0.0005
+SCHEDULER:
+  warmup_ratio: 0.1
+  use_scheduler: true
+RESULT:
+  savedir: ./saved_model-direct/ngram_title_category_select
