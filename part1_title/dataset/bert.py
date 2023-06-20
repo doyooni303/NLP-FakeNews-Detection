@@ -1,11 +1,11 @@
 from .build_dataset import FakeDataset
 import torch 
 from typing import List
-import pdb
 
 class BERTDataset(FakeDataset):
-    def __init__(self, tokenizer, max_word_len: int):
-        super(BERTDataset, self).__init__(tokenizer=tokenizer)
+    def __init__(self, tokenizer, max_word_len: int, name: str,
+                 use_cat: bool = False):
+        super(BERTDataset, self).__init__(tokenizer=tokenizer, use_cat = use_cat, name = name)
 
         self.max_word_len = max_word_len
         self.vocab = self.tokenizer.vocab
@@ -15,6 +15,7 @@ class BERTDataset(FakeDataset):
         self.cls_idx = self.vocab[self.vocab.cls_token]
 
     def transform(self, title: str, text: list) -> dict:
+        
         sent_list = [title] + text
         src = [self.tokenizer(d_i) for d_i in sent_list]
 
@@ -26,7 +27,6 @@ class BERTDataset(FakeDataset):
         doc['input_ids'] = input_ids
         doc['attention_mask'] = attention_mask
         doc['token_type_ids'] = token_type_ids
-        pdb.set_trace()
    
         return doc
 

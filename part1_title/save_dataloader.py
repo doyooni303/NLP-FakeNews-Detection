@@ -3,11 +3,14 @@ import torch
 import os 
 import yaml
 import argparse 
+import pdb
 
 from dataset import create_tokenizer, create_dataset, create_dataloader
 
+# 수정 부분
 def save(split, dataloader, savedir, name):
-    if name=='RoBERTa_DualBERT':
+    
+    if 'DualBERT' in name:
         main_dict, ctg_dict = {}, {}
         label_list = []
         for i, (doc,label) in enumerate(tqdm(dataloader, desc=split)):
@@ -39,6 +42,38 @@ def save(split, dataloader, savedir, name):
         label_list = torch.cat(label_list)
 
         torch.save({'doc':{'main':main_dict,'ctg':ctg_dict}, 'label':label_list}, os.path.join(savedir,f'{split}.pt'))
+        
+    elif 'CAT_CONT_LEN' in name:
+        
+        doc_dict = {}
+        
+        for i, (doc, label, cat, length) in enumerate(tqdm(dataloader, desc=split)):
+            if len(doc_dict) == 0:
+                for k in doc.keys():
+                    doc_dict[k] = []
+                
+            for k in doc.keys():
+                doc_dict[k].append(doc[k])
+
+            if i==0:
+                cat_doc = cat
+                # cont_doc = cont
+                label_list = label
+                list_of_length = length
+            else:
+                cat_doc=torch.cat([cat_doc,cat],dim=0)
+                # cont_doc=torch.cat([cont_doc,cont],dim=0)
+                label_list=torch.cat([label_list,label],dim=0)
+                list_of_length=torch.cat([list_of_length,length],dim=0)
+                # ps -eo user,pid,ppid,rss,size,vsize,pmem,pcpu,time,comm --sort -rss | head -n 10
+            
+        for k in doc_dict.keys():
+            doc_dict[k] = torch.cat(doc_dict[k])
+
+        torch.save({'doc':doc_dict, 'label':label_list,
+                    'cat_doc': cat_doc, 'length_of_tokens': list_of_length},
+                    os.path.join(savedir,f'{split}.pt'))
+
     else:
         doc_dict = {}
         label_list = []
@@ -71,24 +106,32 @@ if __name__ == '__main__':
     savedir = os.path.join(cfg['RESULT']['savedir'], directory_name)
     os.makedirs(savedir, exist_ok=True)
 
-    # tokenizer
+    #!
+    # tokenizer 
     tokenizer, word_embed = create_tokenizer(
-        name            = cfg['TOKENIZER']['name'], 
-        vocab_path      = cfg['TOKENIZER'].get('vocab_path', None), 
-        max_vocab_size  = cfg['TOKENIZER'].get('max_vocab_size', None)
+        name                          = cfg['TOKENIZER']['name'], 
+        vocab_path                    = cfg['TOKENIZER'].get('vocab_path', None), 
+        max_vocab_size                = cfg['TOKENIZER'].get('max_vocab_size', None),
+        pretrained_model_name_or_path = cfg['TOKENIZER']['pretrained_model_name_or_path']
     )
 
     for split in cfg['MODE']['save_list']:
         # try:
-        dataset = create_dataset(
-            name           = cfg['DATASET']['name'], 
-            data_path      = cfg['DATASET']['data_path'], 
-            direct_path    = cfg['DATASET'].get('direct_path',None),
-            split          = split, 
-            tokenizer      = tokenizer, 
-            saved_data_path = cfg['DATASET']['saved_data_path'],
+        
+        dataset_config = {
+            'name': cfg['DATASET']['name'],
+            'data_path': cfg['DATASET']['data_path'],
+            'direct_path': cfg['DATASET'].get('direct_path', None),
+            'split': split,
+            'tokenizer': tokenizer, 
+            'saved_data_path': cfg['DATASET']['saved_data_path'],
             **cfg['DATASET']['PARAMETERS']
-        )
+        }
+
+        if 'CAT_KEYS' in cfg['DATASET']:
+            dataset_config['cat_keys'] = cfg['DATASET']['CAT_KEYS']
+
+        dataset = create_dataset(**dataset_config)
         
         dataloader = create_dataloader(
             dataset     = dataset, 

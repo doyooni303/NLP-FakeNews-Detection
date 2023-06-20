@@ -12,6 +12,7 @@ DATASET:
   direct_path: ../data-direct/bow_content_category_select
 TOKENIZER:
   name: bert
+  pretrained_model_name_or_path: skt/kobert-base-v1
 MODEL:
   modelname: bert
   PARAMETERS:

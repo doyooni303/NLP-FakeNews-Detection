@@ -21,8 +21,10 @@ def create_model(
 
     create_fn = model_entrypoint(modelname)
     
+    #! 수정
     model = create_fn(
-        hparams    = hparams
+        hparams    = hparams,
+        **kwargs
     )
 
     # word embedding

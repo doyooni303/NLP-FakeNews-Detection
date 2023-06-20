@@ -10,6 +10,7 @@ import numpy as np
 from utils import convert_device
 from sklearn.metrics import roc_auc_score, f1_score, recall_score, precision_score, confusion_matrix
 import transformers
+import pdb
 
 _logger = logging.getLogger('train')
 transformers.logging.set_verbosity_error()
@@ -34,12 +35,16 @@ class AverageMeter:
 
 
 def training(model, num_training_steps: int, trainloader, validloader, criterion, optimizer, scheduler,
-             log_interval: int, eval_interval: int, savedir: str, use_wandb: bool, accumulation_steps: int = 1, device: str = 'cpu'):   
+             log_interval: int, eval_interval: int, savedir: str, use_wandb: bool, accumulation_steps: int = 1, device: str = 'cpu',
+             **kwargs):   
     batch_time_m = AverageMeter()
     data_time_m = AverageMeter()
     acc_m = AverageMeter()
     losses_m = AverageMeter()
     best_acc = 0
+    
+    model_name = model.__class__.__name__
+    print(model_name)
     
     end = time.time()
     
@@ -48,17 +53,48 @@ def training(model, num_training_steps: int, trainloader, validloader, criterion
 
     step = 0
     train_mode = True
+    
+    #!
+    similarity = 'Sims' in model_name
+    lstm = 'LSTM' in model_name
+
+    if lstm:
+        hidden = None
+        cell = None
+
+    
     while train_mode:
-        for inputs, targets in trainloader:
+        for inputs, targets, *extra_args in trainloader:
             # batch
             inputs, targets = convert_device(inputs, device), targets.to(device)
             data_time_m.update(time.time() - end)
-
+            
+            if similarity:
+                cat, length = extra_args
+                cat, length = cat.to(device), length.to(device)
+            
             # optimizer condition
             opt_cond = (step + 1) % accumulation_steps == 0
             
-            # predict
-            outputs = model(**inputs)
+            #!
+            if lstm:
+                batch_size = len(targets)
+                hidden = torch.zeros(1*(kwargs['num_layers']), batch_size,  kwargs['hidden_size']).to(device)
+                cell = torch.zeros(1*(kwargs['num_layers']), batch_size, kwargs['hidden_size']).to(device)
+                outputs = model(**inputs, hidden = hidden, cell = cell)
+                
+            elif similarity:
+                    outputs = model(
+                            input_ids = inputs['input_ids'],
+                            attention_mask = inputs['attention_mask'],
+                            token_type_ids = inputs['token_type_ids'],
+                            length_of_tokens = length,
+                            category = cat
+                            )
+            else:
+                outputs = model(**inputs)
+
+
             loss = criterion(outputs, targets)
             # loss for accumulation steps
             loss /= accumulation_steps        
@@ -93,6 +129,8 @@ def training(model, num_training_steps: int, trainloader, validloader, criterion
                                 'Acc: {acc.avg:.3%} '
                                 'LR: {lr:.3e} '
                                 'Time: {batch_time.val:.3f}s ({batch_time.avg:.3f}) ' # {rate:>7.2f}/s ({batch_time.avg:.3f}s, {rate_avg:>7.2f}/s) '
+                                # ({batch_time.avg:.3f}) ' 
+                                # {rate:>7.2f}/s ({batch_time.avg:.3f}s, {rate_avg:>7.2f}/s) '
                                 'Data: {data_time.val:.3f} ({data_time.avg:.3f})'.format(
                                 (step+1)//accumulation_steps, num_training_steps, 
                                 loss       = losses_m, 
@@ -105,7 +143,7 @@ def training(model, num_training_steps: int, trainloader, validloader, criterion
 
 
                 if (((step+1) // accumulation_steps) % eval_interval == 0 and step != 0) or step+1 == num_training_steps: 
-                    eval_metrics = evaluate(model, validloader, criterion, log_interval, device)
+                    eval_metrics = evaluate(model, validloader, criterion, log_interval, device, **kwargs)
                     model.train()
 
                     eval_log = dict([(f'eval_{k}', v) for k, v in eval_metrics.items()])
@@ -142,21 +180,52 @@ def training(model, num_training_steps: int, trainloader, validloader, criterion
     _logger.info('Best Metric: {0:.3%} (step {1:})'.format(best_acc, state['best_step']))
     
         
-def evaluate(model, dataloader, criterion, log_interval: int, device: str = 'cpu', sample_check: bool = False):
+def evaluate(model, dataloader, criterion, log_interval: int, device: str = 'cpu', sample_check: bool = False,
+             **kwargs):
     correct = 0
     total = 0
     total_loss = 0
     total_score = []
     total_preds = []
     total_targets = []
+    
+    model_name = model.__class__.__name__
+    
+    similarity = 'Sims' in model_name
+    
+    #!
+    if 'LSTM' in model_name:
+        hidden, cell = None, None
 
     model.eval()
     with torch.no_grad():
-        for idx, (inputs, targets) in enumerate(dataloader):
+        for idx, (inputs, targets, *extra_args) in enumerate(dataloader):
             inputs, targets = convert_device(inputs, device), targets.to(device)
             
-            # predict
-            outputs = model(**inputs)
+            if similarity:
+                cat, length = extra_args
+                cat, length = cat.to(device), length.to(device)
+            
+            # Predict
+            # add initial hidden and cells state of LSTM
+            if "LSTM" in model_name:
+                batch_size = len(targets)
+                hidden = torch.zeros(1*(kwargs['num_layers']), batch_size,  kwargs['hidden_size']).to(device)
+                cell = torch.zeros(1*(kwargs['num_layers']), batch_size, kwargs['hidden_size']).to(device) 
+
+                # predict
+                outputs = model(**inputs, hidden = hidden, cell = cell)
+            elif similarity:
+                outputs = model(
+                input_ids = inputs['input_ids'],
+                attention_mask = inputs['attention_mask'],
+                token_type_ids = inputs['token_type_ids'],
+                length_of_tokens = length,
+                category = cat
+                )
+            else:
+                outputs = model(**inputs)
+
             outputs = torch.nn.functional.softmax(outputs, dim=1)
 
             # loss 

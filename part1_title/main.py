@@ -33,24 +33,37 @@ def run(cfg):
     # savedir
     savedir = os.path.join(cfg['RESULT']['savedir'], cfg['EXP_NAME'])
     os.makedirs(savedir, exist_ok=True)
-
-    # tokenizer
+    
+    #!
+    # tokenizer 
     tokenizer, word_embed = create_tokenizer(
-        name            = cfg['TOKENIZER']['name'], 
-        vocab_path      = cfg['TOKENIZER'].get('vocab_path', None), 
-        max_vocab_size  = cfg['TOKENIZER'].get('max_vocab_size', None)
+        name                          = cfg['TOKENIZER']['name'], 
+        vocab_path                    = cfg['TOKENIZER'].get('vocab_path', None), 
+        max_vocab_size                = cfg['TOKENIZER'].get('max_vocab_size', None),
+        pretrained_model_name_or_path = cfg['TOKENIZER']['pretrained_model_name_or_path']
     )
     
+    
+    
+    #?
+    modelname = cfg['MODEL']['modelname']
+
+    build_model_params = {
+        'modelname': modelname,
+        'hparams': cfg['MODEL']['PARAMETERS'],
+        'word_embed': word_embed,
+        'tokenizer': tokenizer,
+        'freeze_word_embed': cfg['MODEL'].get('freeze_word_embed', False),
+        'use_pretrained_word_embed': cfg['MODEL'].get('use_pretrained_word_embed', False),
+        'checkpoint_path': cfg['MODEL']['CHECKPOINT']['checkpoint_path']
+    }
+
+    build_model_params.update(**cfg['MODEL']['Exp_Params']) if 'lstm' in modelname else None
+
     # Build Model
-    model = create_model(
-        modelname                 = cfg['MODEL']['modelname'],
-        hparams                   = cfg['MODEL']['PARAMETERS'],
-        word_embed                = word_embed,
-        tokenizer                 = tokenizer,
-        freeze_word_embed         = cfg['MODEL'].get('freeze_word_embed',False),
-        use_pretrained_word_embed = cfg['MODEL'].get('use_pretrained_word_embed',False),
-        checkpoint_path           = cfg['MODEL']['CHECKPOINT']['checkpoint_path'],
-    )
+    model = create_model(**build_model_params)
+    
+    print(model)
     model.to(device)
 
     _logger.info('# of trainable params: {}'.format(np.sum([p.numel() if p.requires_grad else 0 for p in model.parameters()])))
@@ -121,23 +134,46 @@ def run(cfg):
                 num_training_steps = cfg['TRAIN']['num_training_steps'])
         else:
             scheduler = None
-            
+        
+        #? 
+
         # Fitting model
-        training(
-            model              = model, 
-            num_training_steps = cfg['TRAIN']['num_training_steps'], 
-            trainloader        = trainloader, 
-            validloader        = validloader, 
-            criterion          = criterion, 
-            optimizer          = optimizer, 
-            scheduler          = scheduler,
-            log_interval       = cfg['LOG']['log_interval'],
-            eval_interval      = cfg['LOG']['eval_interval'],
-            savedir            = savedir,
-            accumulation_steps = cfg['TRAIN']['accumulation_steps'],
-            device             = device,
-            use_wandb          = cfg['TRAIN']['use_wandb']
-        )
+        training_params = {
+            'model': model,
+            'num_training_steps': cfg['TRAIN']['num_training_steps'],
+            'trainloader': trainloader,
+            'validloader': validloader,
+            'criterion': criterion,
+            'optimizer': optimizer,
+            'scheduler': scheduler,
+            'log_interval': cfg['LOG']['log_interval'],
+            'eval_interval': cfg['LOG']['eval_interval'],
+            'savedir': savedir,
+            'accumulation_steps': cfg['TRAIN']['accumulation_steps'],
+            'device': device,
+            'use_wandb': cfg['TRAIN']['use_wandb'],
+        }
+
+        training_params.update(**cfg['MODEL']['Exp_Params']) if 'lstm' in modelname else None
+
+        training(**training_params)
+                
+        # training(
+        #     model              = model, 
+        #     num_training_steps = cfg['TRAIN']['num_training_steps'], 
+        #     trainloader        = trainloader, 
+        #     validloader        = validloader, 
+        #     criterion          = criterion, 
+        #     optimizer          = optimizer, 
+        #     scheduler          = scheduler,
+        #     log_interval       = cfg['LOG']['log_interval'],
+        #     eval_interval      = cfg['LOG']['eval_interval'],
+        #     savedir            = savedir,
+        #     accumulation_steps = cfg['TRAIN']['accumulation_steps'],
+        #     device             = device,
+        #     use_wandb          = cfg['TRAIN']['use_wandb'],
+        #     **cfg['MODEL']['Exp_Params']
+        # )
 
     elif cfg['MODE']['do_test']:
         criterion = torch.nn.CrossEntropyLoss()
@@ -161,15 +197,20 @@ def run(cfg):
                     num_workers = cfg['TRAIN']['num_workers'],
                     shuffle     = False
                 )
+                
+                #?
+                evaluate_params = {
+                'model': model,
+                'dataloader': dataloader,
+                'criterion': criterion,
+                'log_interval': cfg['LOG']['log_interval'],
+                'device': device,
+                'sample_check': True,
+                }
 
-                metrics, exp_results = evaluate(
-                    model        = model, 
-                    dataloader   = dataloader, 
-                    criterion    = criterion,
-                    log_interval = cfg['LOG']['log_interval'],
-                    device       = device,
-                    sample_check = True
-                )
+                evaluate_params.update(**cfg['MODEL']['Exp_Params']) if 'lstm' in modelname else None
+                
+                metrics, exp_results = evaluate(**evaluate_params)
                 
                 # save exp result
                 exp_results = pd.concat([pd.DataFrame({'filename':dataset.data_info}), pd.DataFrame(exp_results)], axis=1)

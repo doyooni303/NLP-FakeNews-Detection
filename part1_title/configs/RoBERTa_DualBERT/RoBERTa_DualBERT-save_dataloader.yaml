@@ -17,6 +17,8 @@ DATASET:
 
 TOKENIZER:
     name: RoBERTa_dualbert
+    pretrained_model_name_or_path: klue/roberta-base
+
 
 TRAIN:
     batch_size: 32

@@ -19,6 +19,7 @@ DATASET:
 
 TOKENIZER:
     name: RoBERTa_dualbert
+    pretrained_model_name_or_path: klue/roberta-base
 
 MODEL:
     modelname: RoBERTa_dualbert

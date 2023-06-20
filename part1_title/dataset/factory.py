@@ -34,7 +34,8 @@ def extract_word_embedding(vocab_path: str, max_vocab_size: int =-1) -> Union[li
 
 
 
-def create_tokenizer(name: str, vocab_path: str, max_vocab_size: int):
+def create_tokenizer(name: str, vocab_path: str, max_vocab_size: int, **kwargs):
+    
     if name == 'mecab':
         vocab, word_embed = extract_word_embedding(vocab_path = vocab_path, max_vocab_size = max_vocab_size)
         tokenizer = FNDTokenizer(vocab = vocab, tokenizer = Mecab())
@@ -44,29 +45,40 @@ def create_tokenizer(name: str, vocab_path: str, max_vocab_size: int):
         _, vocab = get_pytorch_kobert_model(cachedir=".cache")
         tokenizer = nlp.data.BERTSPTokenizer(get_tokenizer(), vocab, lower=False)
         
-    elif name == 'kobigbird':
+    #!
+    else:
         word_embed = None
-        tokenizer = AutoTokenizer.from_pretrained("monologg/kobigbird-bert-base")
-        
-    elif name == 'RoBERTa_dualbert':
-        word_embed = None
-        tokenizer = AutoTokenizer.from_pretrained("klue/roberta-base")       
+        tokenizer = AutoTokenizer.from_pretrained(**kwargs)       
         
     return tokenizer, word_embed 
 
 
-def create_dataset(name: str, data_path: str, direct_path: Union[None, str], split: str, tokenizer, saved_data_path: str, **kwargs):
+def create_dataset(name: str, data_path: str, direct_path: Union[None, str], split: str, tokenizer, saved_data_path: str, 
+                   cat_keys = None, **kwargs):
     dataset = __import__('dataset').__dict__[f'{name}Dataset'](
+        name = name,
         tokenizer = tokenizer,
         **kwargs
     )
+    
+            
+    if 'CAT_CONT_LEN' in name:
+        dataset.load_dataset(
+            data_dir        = data_path, 
+            split           = split, 
+            direct_dir      = direct_path,
+            saved_data_path = saved_data_path,
+            cat_keys = cat_keys
+        )
+        
+    else:
+        dataset.load_dataset(
+            data_dir        = data_path, 
+            split           = split, 
+            direct_dir      = direct_path,
+            saved_data_path = saved_data_path,
+        )
 
-    dataset.load_dataset(
-        data_dir        = data_path, 
-        split           = split, 
-        direct_dir      = direct_path,
-        saved_data_path = saved_data_path,
-    )
 
     return dataset
 
