@@ -56,6 +56,7 @@ def training(model, num_training_steps: int, trainloader, validloader, criterion
     
     #!
     similarity = 'Sims' in model_name
+    multimodal = 'Multimodal' in model_name
     lstm = 'LSTM' in model_name
 
     if lstm:
@@ -69,7 +70,7 @@ def training(model, num_training_steps: int, trainloader, validloader, criterion
             inputs, targets = convert_device(inputs, device), targets.to(device)
             data_time_m.update(time.time() - end)
             
-            if similarity:
+            if similarity or multimodal:
                 cat, length = extra_args
                 cat, length = cat.to(device), length.to(device)
             
@@ -83,7 +84,7 @@ def training(model, num_training_steps: int, trainloader, validloader, criterion
                 cell = torch.zeros(1*(kwargs['num_layers']), batch_size, kwargs['hidden_size']).to(device)
                 outputs = model(**inputs, hidden = hidden, cell = cell)
                 
-            elif similarity:
+            elif similarity or multimodal:
                     outputs = model(
                             input_ids = inputs['input_ids'],
                             attention_mask = inputs['attention_mask'],
@@ -192,7 +193,8 @@ def evaluate(model, dataloader, criterion, log_interval: int, device: str = 'cpu
     model_name = model.__class__.__name__
     
     similarity = 'Sims' in model_name
-    
+    multimodal = 'Multimodal' in model_name
+
     #!
     if 'LSTM' in model_name:
         hidden, cell = None, None
@@ -202,7 +204,7 @@ def evaluate(model, dataloader, criterion, log_interval: int, device: str = 'cpu
         for idx, (inputs, targets, *extra_args) in enumerate(dataloader):
             inputs, targets = convert_device(inputs, device), targets.to(device)
             
-            if similarity:
+            if similarity or multimodal:
                 cat, length = extra_args
                 cat, length = cat.to(device), length.to(device)
             
@@ -215,7 +217,7 @@ def evaluate(model, dataloader, criterion, log_interval: int, device: str = 'cpu
 
                 # predict
                 outputs = model(**inputs, hidden = hidden, cell = cell)
-            elif similarity:
+            elif similarity or multimodal:
                 outputs = model(
                 input_ids = inputs['input_ids'],
                 attention_mask = inputs['attention_mask'],

@@ -43,7 +43,7 @@ def save(split, dataloader, savedir, name):
 
         torch.save({'doc':{'main':main_dict,'ctg':ctg_dict}, 'label':label_list}, os.path.join(savedir,f'{split}.pt'))
         
-    elif 'CAT_CONT_LEN' in name:
+    elif 'CAT_CONT_LEN' in name or 'Multimodal_net' in name:
         
         doc_dict = {}
         
@@ -73,6 +73,9 @@ def save(split, dataloader, savedir, name):
         torch.save({'doc':doc_dict, 'label':label_list,
                     'cat_doc': cat_doc, 'length_of_tokens': list_of_length},
                     os.path.join(savedir,f'{split}.pt'))
+
+
+
 
     else:
         doc_dict = {}

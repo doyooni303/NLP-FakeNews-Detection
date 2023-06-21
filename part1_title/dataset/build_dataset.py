@@ -24,7 +24,7 @@ class FakeDataset(Dataset):
         data_info = glob(os.path.join(data_dir, split, '*/*/*'))
         self.data_info = data_info 
         
-        if 'CAT_CONT_LEN' in self.name:
+        if 'CAT_CONT_LEN' in self.name or 'Multimodal_net' in self.name:
             self.cat_keys = cat_keys
         
         if direct_dir:
@@ -35,7 +35,7 @@ class FakeDataset(Dataset):
 
         setattr(self, 'saved_data_path', saved_data_path)
         
-        if 'CAT_CONT_LEN' in self.name:
+        if 'CAT_CONT_LEN' in self.name or 'Multimodal_net' in self.name:
             if saved_data_path: 
                 self.data = torch.load(os.path.join(saved_data_path, f'{split}.pt'))
                 
@@ -66,8 +66,6 @@ class FakeDataset(Dataset):
             setattr(self, 'data_info', data_info)
             setattr(self, 'data', data)
 
-
-
     def transform(self):
         raise NotImplementedError
 
@@ -84,7 +82,7 @@ class FakeDataset(Dataset):
             label = self.data['label'][i]
             
             #! 
-            if 'CAT_CONT_LEN' in self.name:
+            if 'CAT_CONT_LEN' in self.name or 'Multimodal_net' in self.name:
                 length_of_tokens = self.data['length_of_tokens'][i]
                 cat_tensor = self.data['cat_doc'][i]
                 return doc, label, cat_tensor, length_of_tokens
@@ -96,7 +94,6 @@ class FakeDataset(Dataset):
         
             # label
             label = 1 if 'NonClickbait_Auto' not in self.data_info[i] else 0
-            
             
             #! 
             if self.use_cat:
@@ -115,13 +112,14 @@ class FakeDataset(Dataset):
                 label = 1 if 'NonClickbait_Auto' not in self.data_info[i] else 0
                 
                 #!
-                if 'CAT_CONT_LEN' in self.name:
+                if 'CAT_CONT_LEN' in self.name or 'Multimodal_net' in self.name:
                     length_of_tokens, doc = self.transform(
                         title = news_info['labeledDataInfo']['newTitle'], 
                         text  = news_info['sourceDataInfo']['newsContent'].split('\n')
                     )
-                    
+
                     for idx, key in enumerate(self.cat_keys):
+                        
                         temp=torch.zeros((len(self.encoding_info[key])))
                         enc_idx=self.encoding_info[key].index(news_info['sourceDataInfo'][key])
                         temp[enc_idx]=1
@@ -132,7 +130,7 @@ class FakeDataset(Dataset):
                             cat_tensor = torch.cat([cat_tensor,temp],dim=0)
                             
                     return doc, label, cat_tensor, length_of_tokens
-                
+
                 else:
                     doc = self.transform(
                         title = news_info['labeledDataInfo']['newTitle'], 

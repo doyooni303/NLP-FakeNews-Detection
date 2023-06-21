@@ -4,8 +4,6 @@ import torch
 import numpy as np
 import pandas as pd
 
-from datasets import load_metric
-
 
 def torch_seed(random_seed: int):
     torch.manual_seed(random_seed)

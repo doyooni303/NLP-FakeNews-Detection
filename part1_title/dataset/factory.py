@@ -62,7 +62,7 @@ def create_dataset(name: str, data_path: str, direct_path: Union[None, str], spl
     )
     
             
-    if 'CAT_CONT_LEN' in name:
+    if 'CAT_CONT_LEN' in name or 'Multimodal_net' in name:
         dataset.load_dataset(
             data_dir        = data_path, 
             split           = split, 
