@@ -149,7 +149,8 @@ cython_debug/
 # End of https://www.toptal.com/developers/gitignore/api/python
 
 # results
-data*/
+#data*/
+data-direct
 *.ipynb
 !inference.ipynb
 wandb/
@@ -160,4 +161,4 @@ saved_model*/
 *.tar.gz
 *.zip
 clickbait_direct/
-*direct
+# *direct
