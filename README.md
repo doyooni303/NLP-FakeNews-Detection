@@ -89,7 +89,7 @@ Fake-News-Detection-Dataset
 1. AI-Hub 낚시성 기사 탐지 데이터 다운로드 [[다운로드 링크](https://www.aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100&aihubDataSe=realm&dataSetSn=71338#:~:text=%E2%80%BB%20%EB%82%B4%EA%B5%AD%EC%9D%B8%EB%A7%8C%20%EB%8D%B0%EC%9D%B4%ED%84%B0%20%EC%8B%A0%EC%B2%AD,%EC%9D%80%20%EB%B3%80%EA%B2%BD%20%EB%90%A0%20%EC%88%98%20%EC%9E%88%EC%8A%B5%EB%8B%88%EB%8B%A4.)] 
 
 2. `./data`로 다음과 같은 데이터 폴더 구조 설정
-![image](https://user-images.githubusercontent.com/37654013/208360905-da4841f0-27d4-46f5-9e99-2179e9773cb5.png)
+![image](./figures/dataset_tree_new.png)
 
 
 3. `./clickbait_direct`내 가이드에 따라 데이터셋 변형 진행
