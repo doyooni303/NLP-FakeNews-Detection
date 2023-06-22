@@ -156,7 +156,7 @@ data-direct
 wandb/
 word-embeddings/
 saved_model*/
-*.sh
+# *.sh
 !*output.log
 *.tar.gz
 *.zip

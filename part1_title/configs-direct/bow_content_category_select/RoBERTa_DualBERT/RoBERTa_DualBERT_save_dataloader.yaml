@@ -8,7 +8,7 @@ MODE:
         - test
 
 DATASET:
-    name: DualBERT
+    name: RoBERTa_DualBERT
     data_path: ../data/Part1 # news article directory
     saved_data_path: false
     PARAMETERS:

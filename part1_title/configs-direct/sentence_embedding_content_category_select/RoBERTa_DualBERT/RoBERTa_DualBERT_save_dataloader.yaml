@@ -1,4 +1,4 @@
-EXP_NAME: RoBERTa_DualBERT-tfidf_title_category_select
+EXP_NAME: RoBERTa_DualBERT-sentence_embedding_content_category_select
 SEED: 223
     
 MODE:
@@ -14,15 +14,16 @@ DATASET:
     PARAMETERS:
         max_word_len: 512
         max_category_len: 128
-    direct_path: ../data-direct/tfidf_title_category_select
+    direct_path: ../data-direct/sentence_embedding_content_category_select
 
 TOKENIZER:
     name: RoBERTa_dualbert
+    pretrained_model_name_or_path: klue/roberta-base
 
 TRAIN:
     batch_size: 32
     num_workers: 0
 
 RESULT:
-    savedir: ../data-direct/tfidf_title_category_select
+    savedir: ../data-direct/sentence_embedding_content_category_select
     dataname: RoBERTa_DualBERT_w512

@@ -8,11 +8,11 @@ MODE:
 DATASET:
     name: BERT_LSTM
     data_path: ../data/Part1 # news article directory
-    saved_data_path: ../data-direct/ngram_content_category_select/RoBERTa_LSTM
+    saved_data_path: ../data-direct/ngram_title_category_select/RoBERTa_LSTM
     PARAMETERS:
         max_word_len: 512
         use_cat: True
-    direct_path: ../data-direct/ngram_content_category_select
+    direct_path: ../data-direct/ngram_title_category_select
 
 TOKENIZER:
     name: RoBERTa
@@ -49,4 +49,4 @@ SCHEDULER:
     use_scheduler: True
 
 RESULT:
-    savedir: ./saved_model-direct/ngram_content_category_select
+    savedir: ./saved_model-direct/ngram_title_category_select
