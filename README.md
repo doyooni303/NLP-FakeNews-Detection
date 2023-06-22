@@ -108,10 +108,9 @@ Fake-News-Detection-Dataset
 - DualBERT[^8]
 
 # Experiments
-<div align="center">
+
 ![image](./figures/main_exp_title.png)
 ![image](./figures/main_exp_content.png)
-</div>
 
 # Reference
 
