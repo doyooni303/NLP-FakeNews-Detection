@@ -1,13 +1,5 @@
 # Fake-News-Detection-Dataset
 
-한국어 가짜 뉴스 탐지 데이터셋에 대한 baseline 실험 결과
-
-<div align="center">
-
-[📘 Documentation](https://tootouch.github.io/Fake-News-Detection-Dataset/) | [github](https://github.com/TooTouch/Fake-News-Detection-Dataset)
-
-</div>
-
 # Enviroments
 
 - python 3.6.10
@@ -90,14 +82,17 @@ Fake-News-Detection-Dataset
 
 ```
 
-# Data
 
-`./data`에는 다음과 같은 데이터 폴더 구조로 구성되어 있음
+# Part 1: 제목 - 본문 일치성 [ [Part1](https://github.com/TooTouch/Fake-News-Detection-Dataset/tree/0bb478f18ad83cec2104a6ff8eebe3ff9f7b4e7a/part1_title) ]
 
+## Dataset
+1. AI-Hub 낚시성 기사 탐지 데이터 다운로드 [[다운로드 링크](https://www.aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100&aihubDataSe=realm&dataSetSn=71338#:~:text=%E2%80%BB%20%EB%82%B4%EA%B5%AD%EC%9D%B8%EB%A7%8C%20%EB%8D%B0%EC%9D%B4%ED%84%B0%20%EC%8B%A0%EC%B2%AD,%EC%9D%80%20%EB%B3%80%EA%B2%BD%20%EB%90%A0%20%EC%88%98%20%EC%9E%88%EC%8A%B5%EB%8B%88%EB%8B%A4.)] 
+
+2. `./data`로 다음과 같은 데이터 폴더 구조 설정
 ![image](https://user-images.githubusercontent.com/37654013/208360905-da4841f0-27d4-46f5-9e99-2179e9773cb5.png)
 
 
-# Part 1: 제목 - 본문 일치성 [ [Part1](https://github.com/TooTouch/Fake-News-Detection-Dataset/tree/0bb478f18ad83cec2104a6ff8eebe3ff9f7b4e7a/part1_title) ]
+3. `./clickbait_direct`내 가이드에 따라 데이터셋 변형 진행
 
 ## Baseline Models
 
@@ -105,12 +100,18 @@ Fake-News-Detection-Dataset
 - FNDNet[^2]
 - BERT[^3]
 
-# Part 2: 주제 분리 탐지 [ [Part2](https://github.com/TooTouch/Fake-News-Detection-Dataset/tree/0bb478f18ad83cec2104a6ff8eebe3ff9f7b4e7a/part2_context) ]
-## Baseline Models
+## Methods
 
-- BERT[^4]
-- KoBERTSeg[^5]
+- BERT<sub>category</sub>
+- Multimodal-Net[^6]
+- BERT-LSTM<sub>origina/categroy</sub>[^7]
+- DualBERT[^8]
 
+# Experiments
+<div align="center">
+![image](./figures/main_exp_title.png)
+![image](./figures/main_exp_content.png)
+</div>
 
 # Reference
 
@@ -119,3 +120,6 @@ Fake-News-Detection-Dataset
 [^3]: Devlin, J., Chang, M. W., Lee, K., & Toutanova, K. (2018). BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. NAACL-HLT (1), 4171-4186
 [^4]: 전재민, 최우용, 최수정, & 박세영. (2019). BTS: 한국어 BERT 를 사용한 텍스트 세그멘테이션. 한국정보과학회 학술발표논문집, 413-415.
 [^5]: 소규성, 이윤승, 정의석, & 강필성. (2022). KoBERTSEG: 한국어 BERT 를 이용한 Local Context 기반 주제 분리 방법론. 대한산업공학회지, 48(2), 235-248. 
+[^6]: Shi, X., Mueller, J., Erickson, N., Li, M., & Smola, A. J. (2021). Benchmarking multimodal automl for tabular data with text fields. arXiv preprint arXiv:2111.02705. 
+[^7]: Rai, N., Kumar, D., Kaushik, N., Raj, C., & Ali, A. (2022). Fake News Classification using transformer based enhanced LSTM and BERT. International Journal of Cognitive Computing in Engineering, 3, 98-105.
+[^8]: Chu, Z., Stratos, K., & Gimpel, K. (2020). Unsupervised label refinement improves dataless text classification. arXiv preprint arXiv:2012.04194.
